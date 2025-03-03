@@ -4,7 +4,7 @@ import logo from "../../assets/logo.png";
 import arrow_icon from "../../assets/arrow_icon.png";
 import { CoinContext } from "../../Context/CoinContext";
 import { Link } from "react-router-dom";
-
+import { logout } from "../../firebase";
 const Navbar = () => {
   const { setCurrency } = useContext(CoinContext);
 
@@ -48,8 +48,11 @@ const Navbar = () => {
           <option value="eur">EUR</option>
           <option value="inr">INR</option>
         </select>
-        <button>
-          Sign UP <img src={arrow_icon} alt="" />
+        <button
+         onClick={() => {
+          logout();
+        }}>
+          Logout <img src={arrow_icon} alt="" />
         </button>
       </div>
     </div>
