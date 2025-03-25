@@ -5,9 +5,18 @@ import { CoinContext } from "../../Context/CoinContext";
 import { Link } from "react-router-dom";
 
 const Home = () => {
-  const { allCoin, currency } = useContext(CoinContext);
+  const { allCoin = [], currency = { symbol: "$" } } = useContext(CoinContext); // Default values
   const [displayCoin, setDisplayCoin] = useState([]);
   const [input, setInput] = useState("");
+
+  useEffect(() => {
+    if (Array.isArray(allCoin)) {
+      setDisplayCoin(allCoin);
+    } else {
+      setDisplayCoin([]);
+      console.error("Error: allCoin is not an array", allCoin);
+    }
+  }, [allCoin]);
 
   const inputHandler = (event) => {
     setInput(event.target.value);
@@ -16,28 +25,25 @@ const Home = () => {
     }
   };
 
-  const searchHandler = async (event) => {
+  const searchHandler = (event) => {
     event.preventDefault();
-    const coins = await allCoin.filter((item) => {
-      return item.name.toLowerCase().includes(input.toLowerCase());
-    });
+    if (!Array.isArray(allCoin)) return;
+
+    const coins = allCoin.filter((item) =>
+      item.name.toLowerCase().includes(input.toLowerCase())
+    );
     setDisplayCoin(coins);
   };
-
-  useEffect(() => {
-    setDisplayCoin(allCoin);
-  }, [allCoin]);
 
   return (
     <div className="home">
       <Navbar />
-      
+
       <div className="hero">
-      
         <h1>
           Largest <br /> Crypto Marketplace
         </h1>
-        
+
         <form onSubmit={searchHandler}>
           <input
             onChange={inputHandler}
@@ -49,7 +55,7 @@ const Home = () => {
           />
 
           <datalist id="coinlist">
-            {allCoin.map((item, index) => (
+            {(allCoin || []).map((item, index) => (
               <option key={index} value={item.name} />
             ))}
           </datalist>
@@ -57,6 +63,7 @@ const Home = () => {
           <button type="submit">Search</button>
         </form>
       </div>
+
       <div className="crypto-table">
         <div className="table-layout">
           <p>#</p>
@@ -65,24 +72,25 @@ const Home = () => {
           <p style={{ textAlign: "center" }}>24H Change</p>
           <p className="market-cap">Market Cap</p>
         </div>
-        {displayCoin.slice(0, 10).map((item, index) => (
+
+        {(displayCoin || []).slice(0, 10).map((item, index) => (
           <Link to={`/coin/${item.id}`} className="table-layout" key={index}>
-            <p>{item.market_cap_rank}</p>
+            <p>{item.market_cap_rank || "N/A"}</p>
             <div>
-              <img src={item.image} alt="" />
-              <p>{item.name + " - " + item.symbol}</p>
+              <img src={item.image} alt={item.name} />
+              <p>{`${item.name || "Unknown"} - ${item.symbol || "N/A"}`}</p>
             </div>
             <p>
-              {currency.symbol} {item.current_price.toLocaleString()}
+              {currency.symbol} {item.current_price?.toLocaleString() || "N/A"}
             </p>
-            <p
-              className={item.price_change_percentage_24h > 0 ? "green" : "red"}
-            >
-              {Math.floor(item.price_change_percentage_24h * 100) / 100}
+            <p className={item.price_change_percentage_24h > 0 ? "green" : "red"}>
+              {item.price_change_percentage_24h
+                ? Math.floor(item.price_change_percentage_24h * 100) / 100
+                : "N/A"}
             </p>
             <p className="market-cap">
               {currency.symbol}
-              {item.market_cap.toLocaleString()}
+              {item.market_cap?.toLocaleString() || "N/A"}
             </p>
           </Link>
         ))}
